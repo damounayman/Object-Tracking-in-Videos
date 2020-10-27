@@ -20,7 +20,7 @@ def define_ROI(event, x, y, flags, param):
 		c = min(c,c2)  
 		roi_defined = True
 
-cap = cv2.VideoCapture('Test-Videos/Antoine_Mug.mp4')
+cap = cv2.VideoCapture('Test-Videos/VOT-Sunshade.mp4')
 
 # take first frame of the video
 ret, frame = cap.read()
@@ -78,9 +78,10 @@ while(1):
 
         # Draw a blue rectangle on the current image
         r,c,h,w = track_window
-        frame_tracked = cv2.rectangle(frame, (r,c), (r+h,c+w), (255,0,0) ,2)
-        cv2.imshow('Sequence',frame_tracked)
 
+        frame_tracked = cv2.rectangle(frame, (r,c), (r+h,c+w), (255,0,0) ,2)
+
+        cv2.imshow('Sequence',frame_tracked)
         k = cv2.waitKey(60) & 0xff
         if k == 27:
             break
