@@ -1,8 +1,10 @@
 import numpy as np
 import cv2
+from scipy.spatial import distance
 
 roi_defined = False
- 
+video_name = ['Antoine_Mug', 'VOT-Car', 'VOT-Sunshade', 'VOT-Woman', 'VOT-Car', 'VOT-Basket']
+
 def define_ROI(event, x, y, flags, param):
 	global r,c,w,h,roi_defined
 	# if the left mouse button was clicked, 
@@ -20,7 +22,7 @@ def define_ROI(event, x, y, flags, param):
 		c = min(c,c2)  
 		roi_defined = True
 
-cap = cv2.VideoCapture('Test-Videos/VOT-Sunshade.mp4')
+cap = cv2.VideoCapture('Test-Videos/'+video_name[2]+'.mp4')
 
 # take first frame of the video
 ret, frame = cap.read()

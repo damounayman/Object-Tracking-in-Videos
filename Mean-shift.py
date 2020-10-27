@@ -83,6 +83,7 @@ while (1):
 
         frame_tracked = cv2.rectangle(frame, (r, c), (r + h, c + w), (255, 0, 0), 2)
         cv2.imshow("Mask", dst)
+        cv2.imshow("hue", hsv)
         cv2.imshow('Sequence', frame_tracked)
         plt.clf()
         plt.plot(roi_hist)
@@ -92,7 +93,9 @@ while (1):
         if k == 27:
             break
         elif k == ord('s'):
-            cv2.imwrite('Frame_%04d.png' % cpt, frame_tracked)
+            cv2.imwrite('Origin_Frame_%04d.png' % cpt, frame_tracked)
+            cv2.imwrite('Mask_Frame_%04d.png' % cpt, dst)
+            cv2.imwrite('hue_Frame_%04d.png' % cpt, hsv)
         cpt += 1
     else:
         break
