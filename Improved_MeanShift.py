@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+from scipy.spatial import distance
 
 roi_defined = False
 video_name = ['Antoine_Mug', 'VOT-Car', 'VOT-Sunshade', 'VOT-Woman', 'VOT-Basket', 'VOT-Ball']
@@ -21,7 +22,9 @@ def define_ROI(event, x, y, flags, param):
 		c = min(c,c2)  
 		roi_defined = True
 
-experience = video_name[2]
+
+
+experience = video_name[0]
 
 cap = cv2.VideoCapture('Test-Videos/'+experience+'.mp4')
 
@@ -66,7 +69,7 @@ cv2.normalize(roi_hist,roi_hist,0,255,cv2.NORM_MINMAX)
 # Setup the termination criteria: either 10 iterations,
 # or move by less than 1 pixel
 term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
-
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
 cpt = 1
 while(1):
     ret ,frame = cap.read()
@@ -74,9 +77,16 @@ while(1):
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 	# Backproject the model histogram roi_hist onto the 
 	# current image hsv, i.e. dst(x,y) = roi_hist(hsv(0,x,y))
+
+
         dst = cv2.calcBackProject([hsv],[0],roi_hist,[0,180],1)
+        #_, threshold=cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY)
+        #fgmask = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel)
+
         cv2.imshow('dst', dst)
         cv2.imshow('hsv', hsv)
+        #cv2.imshow('fgmask', fgmask)
+  
         # apply meanshift to dst to get the new location
         ret, track_window = cv2.meanShift(dst, track_window, term_crit)
 
