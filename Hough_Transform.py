@@ -182,12 +182,13 @@ while(1):
 
 
         new_x, new_y = transform_hough(frame_g, RT, new_y,new_x,w,h)
-        frame_tracked_Hofe = cv2.rectangle(frame, (new_y - int(w/2), new_x-int(h/2)), (new_y+int(w/2),new_x+int(h/2)), (255,255,255) ,2)
+        frame_tracked_Hofe = cv2.rectangle(frame, (new_y - int(w/2), new_x-int(h/2)), (new_y+int(w/2),new_x+int(h/2)), (0,0,255) ,2)
 
         cv2.imshow('frame_tracked_Hofe',frame_tracked_Hofe)
 
         gradient_magnitude = get_gradient_magnitude(frame_g)
         _ , filtered = cv2.threshold(gradient_magnitude, threshold, 255, cv2.THRESH_BINARY)
+        filtered[np.where((filtered==[0]).all(axis=1))] = [-255]
         cv2.imshow('filtered_gradient_magnitude', filtered)
 
 

@@ -1,7 +1,6 @@
 import numpy as np
 import cv2
-from scipy.spatial import distance
-
+from saliency import Saliency
 roi_defined = False
 video_name = ['Antoine_Mug', 'VOT-Car', 'VOT-Sunshade', 'VOT-Woman', 'VOT-Basket', 'VOT-Ball']
 
@@ -22,9 +21,7 @@ def define_ROI(event, x, y, flags, param):
 		c = min(c,c2)  
 		roi_defined = True
 
-
-
-experience = video_name[0]
+experience = video_name[2]
 
 cap = cv2.VideoCapture('Test-Videos/'+experience+'.mp4')
 
@@ -53,6 +50,7 @@ while True:
 		break
  
 track_window = (r,c,h,w)
+track_window1 = (r,c,h,w)
 # set up the ROI for tracking
 roi = frame[c:c+w, r:r+h]
 # conversion to Hue-Saturation-Value space
@@ -69,31 +67,36 @@ cv2.normalize(roi_hist,roi_hist,0,255,cv2.NORM_MINMAX)
 # Setup the termination criteria: either 10 iterations,
 # or move by less than 1 pixel
 term_crit = ( cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 1 )
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
+
 cpt = 1
 while(1):
     ret ,frame = cap.read()
     if ret == True:
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-	# Backproject the model histogram roi_hist onto the 
-	# current image hsv, i.e. dst(x,y) = roi_hist(hsv(0,x,y))
-
-
+		# Backproject the model histogram roi_hist onto the 
+		# current image hsv, i.e. dst(x,y) = roi_hist(hsv(0,x,y))
         dst = cv2.calcBackProject([hsv],[0],roi_hist,[0,180],1)
-        #_, threshold=cv2.threshold(dst, 127, 255, cv2.THRESH_BINARY)
-        #fgmask = cv2.morphologyEx(threshold, cv2.MORPH_OPEN, kernel)
-
         cv2.imshow('dst', dst)
         cv2.imshow('hsv', hsv)
-        #cv2.imshow('fgmask', fgmask)
-  
+        sal = Saliency(frame, use_numpy_fft=False, gauss_kernel=(3, 3))
+        cv2.imshow('saliency', sal.get_saliency_map())
+        new_dis =sal.get_saliency_map()*dst
+        cv2.imshow('new_dis', new_dis)
         # apply meanshift to dst to get the new location
-        ret, track_window = cv2.meanShift(dst, track_window, term_crit)
-
-        # Draw a blue rectangle on the current image
+        ret, track_window = cv2.meanShift(sal.get_saliency_map()*dst, track_window, term_crit)
+      
+        # Draw a red rectangle on the current image
         r,c,h,w = track_window
 
-        frame_tracked = cv2.rectangle(frame, (r,c), (r+h,c+w), (255,0,0) ,2)
+        frame_tracked = cv2.rectangle(frame, (r,c), (r+h,c+w), (0,0,255) ,2)
+
+
+        ret1, track_window1 = cv2.meanShift(dst, track_window1, term_crit)
+
+        # Draw a blue rectangle on the current image
+        xx,yy,ww,hh = track_window1
+        frame_tracked = cv2.rectangle(frame, (xx, yy), (xx+ww,yy+hh), (255,0,0) ,2)
+		
 
         cv2.imshow('Sequence',frame_tracked)
         k = cv2.waitKey(60) & 0xff
@@ -103,6 +106,7 @@ while(1):
             cv2.imwrite('output/'+experience+'/'+experience+'Frame_%04d.png'%cpt,frame_tracked)
             cv2.imwrite('output/'+experience+'/'+experience+'dst_Frame_%04d.png'%cpt,dst)
             cv2.imwrite('output/'+experience+'/'+experience+'hsv_Frame_%04d.png'%cpt,hsv)
+            cv2.imwrite('output/'+experience+'/'+experience+'sal_Frame_%04d.png'%cpt,new_dis)
         cpt += 1
     else:
         break
