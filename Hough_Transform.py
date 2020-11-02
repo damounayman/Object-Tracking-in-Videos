@@ -6,7 +6,7 @@ roi_defined = False
 video_name = ['Antoine_Mug', 'VOT-Car', 'VOT-Sunshade', 'VOT-Woman', 'VOT-Basket', 'VOT-Ball']
 
 threshold = 100
-experience = video_name[5]
+experience = video_name[3]
 
 cap = cv2.VideoCapture('Test-Videos/'+experience+'.mp4')
 
@@ -77,7 +77,9 @@ def transform_hough(image, r_table, x,y,w,h):
     _ , filtered = cv2.threshold(gradient_magnitude, threshold, 255, cv2.THRESH_BINARY)
     orientation = get_gradient_orientation(filtered)
     orientation[filtered == 0] = -255
-
+    backtorgb = cv2.cvtColor(filtered,cv2.COLOR_GRAY2RGB)
+    backtorgb[np.where((backtorgb==[0,0,0]).all(axis=2))] = [0,0,255]
+    cv2.imshow('get_gradient_orientation', backtorgb)
     vote = np.zeros(image.shape)
 
     for teta in r_table:
@@ -188,10 +190,7 @@ while(1):
 
         gradient_magnitude = get_gradient_magnitude(frame_g)
         _ , filtered = cv2.threshold(gradient_magnitude, threshold, 255, cv2.THRESH_BINARY)
-        filtered[np.where((filtered==[0]).all(axis=1))] = [-255]
         cv2.imshow('filtered_gradient_magnitude', filtered)
-
-
         # apply meanshift to dst to get the new location
         ret, track_window = cv2.meanShift(tmp, track_window, term_crit)
 
